@@ -69,7 +69,7 @@ while tokenizer.nextSentence(forms, tokens):
             sentence += selected_text + ' '
 
         if capturing:
-            lem += lemma.lemma + ' '
+            lem += lemma.lemma + '/' + lemma.tag + ' '
 
         if len(lemma.tag) > 4:
             last_num = lemma.tag[4]
