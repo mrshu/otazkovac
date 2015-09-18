@@ -115,4 +115,4 @@ print "Full dataset:"
 pipelines[-1].fit(np.asarray(csv[1]), np.asarray(csv[2]))
 print "Full accuracy: {}".format(pipelines[-1].score(csv[1], csv[2]))
 
-joblib.dump(pipelines[-1], 'trained_model.pkl', compress=9)
+joblib.dump(pipelines[-1], 'pipeline.pkl', compress=9)
