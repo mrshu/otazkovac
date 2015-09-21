@@ -51,7 +51,6 @@ def main():
                 lemma = lemmas[i]
                 token = tokens[i]
                 selected_text = text[token.start: token.start + token.length]
-                # sys.stdout.write('%s - %s\n' % (lemma.tag, selected_text))
 
                 if selected_text == ',':
                     taking = False
