@@ -1,4 +1,12 @@
 import sys
+from ufal.morphodita import *
+from helpers import load_pipeline
+import codecs
+import locale
+
+encoding = locale.getpreferredencoding()
+sys.stdin = codecs.getreader(encoding)(sys.stdin)
+sys.stdout = codecs.getwriter(encoding)(sys.stdout)
 
 USAGE = "usage: {} [model.pkl] [morphodita_tagger.model]"
 
@@ -8,11 +16,14 @@ def main():
         sys.stdout.write(USAGE.format(sys.argv[0]))
         sys.exit(0)
 
-    tagger = Tagger.load(sys.argv[1])
+    tagger = Tagger.load(sys.argv[2])
     if not tagger:
-        sys.stderr.write("Cannot load tagger from file '%s'\n" % sys.argv[1])
+        sys.stderr.write("Cannot load tagger from file '%s'\n" % sys.argv[2])
         sys.exit(1)
         sys.stderr.write('done\n')
+
+    pipeline = load_pipeline(sys.argv[1])
+    pipeline.steps[-1][-1].classes_ = [u'I' u'P' u'T']
 
     forms = Forms()
     lemmas = TaggedLemmas()
@@ -51,6 +62,7 @@ def main():
                 lemma = lemmas[i]
                 token = tokens[i]
                 selected_text = text[token.start: token.start + token.length]
+                #sys.stdout.write('%s - %s\n' % (lemma.tag, selected_text))
 
                 if selected_text == ',':
                     taking = False
@@ -77,4 +89,5 @@ def main():
                 t = token.start + token.length
             sentence = sentence.strip()
             if sentence != '' and sentence.endswith('.'):
-                sys.stdout.write(sentence)
+                sys.stdout.write('predicting: ' + lem)
+                sys.stdout.write(pipeline.predict(lem) + '\n')

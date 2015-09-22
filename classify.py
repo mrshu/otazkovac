@@ -18,6 +18,7 @@ import sys
 import pandas as pd
 import numpy as np
 import re
+import os
 
 if len(sys.argv) < 2:
     print "usage: {} [FILE.csv]".format(sys.argv[0])
@@ -26,35 +27,15 @@ if len(sys.argv) < 2:
 f = sys.argv[1]
 csv = pd.read_csv(f, header=None, encoding='utf-8', sep='\t')
 
-
-def tokenize(input):
-    lemmas = input.split()
-    tokens = [list(reversed(lemma.split('/'))) for lemma in lemmas]
-    tokens = list(part for token in tokens for part in token)
-    return tokens
-
-
-def special_unigrams_bigrams(text):
-    tokens = tokenize(text)
-
-    for n in range(1, 4):
-        for i in range(0, len(tokens)-n):
-            yield ' '.join(tokens[i:i+n+1])
-
-    if len(tokens) > 4:
-        yield ' '.join(tokens[:2] + tokens[len(tokens) - 2:])
-        yield ' '.join(tokens[:2] + tokens[len(tokens) - 1:])
-        yield ' '.join(tokens[:1] + tokens[len(tokens) - 2:])
-        yield ' '.join(tokens[:1] + tokens[len(tokens) - 1:])
-
+import otazkovac
 
 vectorizers = [
 
     CountVectorizer(ngram_range=(2, 3),
-                    tokenizer=tokenize),
+                    tokenizer=otazkovac.helpers.tokenize),
     CountVectorizer(ngram_range=(2, 4),
-                    tokenizer=tokenize),
-    CountVectorizer(analyzer=special_unigrams_bigrams)
+                    tokenizer=otazkovac.helpers.tokenize),
+    CountVectorizer(analyzer=otazkovac.helpers.special_unigrams_bigrams)
 ]
 
 classifiers = [
@@ -115,4 +96,5 @@ print "Full dataset:"
 pipelines[-1].fit(np.asarray(csv[1]), np.asarray(csv[2]))
 print "Full accuracy: {}".format(pipelines[-1].score(csv[1], csv[2]))
 
+print pipelines[-1].steps[-1][-1].classes_
 joblib.dump(pipelines[-1], 'pipeline.pkl', compress=9)
