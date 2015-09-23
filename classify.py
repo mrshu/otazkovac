@@ -39,7 +39,7 @@ vectorizers = [
 ]
 
 classifiers = [
-    LinearSVC(loss='l2', penalty='l2', dual=False, tol=1e-4),
+    LinearSVC(loss='squared_hinge', penalty='l2', dual=False, tol=1e-4),
 ]
 
 pipelines = []
@@ -57,7 +57,7 @@ for v in vectorizers:
             pipeline = Pipeline([('vect', v),
                                  ('tfidf', TfidfTransformer(sublinear_tf=True,
                                                             use_idf=False)),
-                                 ('clf', classifier)])
+                                 ('clf', OneVsOneClassifier(classifier))])
 
             pipeline.fit(np.asarray(csv[1][train]),
                          np.asarray(csv[2][train]))
@@ -74,7 +74,7 @@ for v in vectorizers:
         pipeline = Pipeline([('vect', v),
                              ('tfidf', TfidfTransformer(sublinear_tf=True,
                                                         use_idf=False)),
-                             ('clf', classifier)])
+                             ('clf', OneVsOneClassifier(classifier))])
         pipelines.append(pipeline)
 
 accuracies = []
@@ -96,5 +96,4 @@ print "Full dataset:"
 pipelines[-1].fit(np.asarray(csv[1]), np.asarray(csv[2]))
 print "Full accuracy: {}".format(pipelines[-1].score(csv[1], csv[2]))
 
-print pipelines[-1].steps[-1][-1].classes_
 joblib.dump(pipelines[-1], 'pipeline.pkl', compress=9)

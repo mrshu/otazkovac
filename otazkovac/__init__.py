@@ -3,6 +3,7 @@ from ufal.morphodita import *
 from helpers import load_pipeline
 import codecs
 import locale
+import re
 
 encoding = locale.getpreferredencoding()
 sys.stdin = codecs.getreader(encoding)(sys.stdin)
@@ -23,7 +24,11 @@ def main():
         sys.stderr.write('done\n')
 
     pipeline = load_pipeline(sys.argv[1])
-    pipeline.steps[-1][-1].classes_ = [u'I' u'P' u'T']
+
+    mapping = {
+        u'T': 'Kedy',
+        u'P': 'Kde'
+    }
 
     forms = Forms()
     lemmas = TaggedLemmas()
@@ -62,18 +67,18 @@ def main():
                 lemma = lemmas[i]
                 token = tokens[i]
                 selected_text = text[token.start: token.start + token.length]
-                #sys.stdout.write('%s - %s\n' % (lemma.tag, selected_text))
 
                 if selected_text == ',':
-                    taking = False
+                    taking = True
                     capturing = False
                     sentence = ''
 
                 if len(lemma.tag) > 4 and last_num != lemma.tag[4]:
+                    taking = True
                     capturing = False
 
                 if lemma.tag[0] == 'E' and lemma.tag[4] == '6' and i == 0:
-                    taking = True
+                    taking = False
                     capturing = True
                     last_num = '6'
 
@@ -88,6 +93,14 @@ def main():
 
                 t = token.start + token.length
             sentence = sentence.strip()
-            if sentence != '' and sentence.endswith('.'):
-                sys.stdout.write('predicting: ' + lem)
-                sys.stdout.write(pipeline.predict(lem) + '\n')
+
+            if sentence != '' and sentence.endswith('.') and lem != '':
+                predicted = pipeline.predict([lem])[0]
+                if predicted == u'I':
+                    continue
+
+                sentence = re.sub('^\s*\,\s*', '', sentence)
+                sentence = mapping[predicted] + ' ' + sentence
+                sentence = re.sub('\s*\.$', '?', sentence)
+
+                sys.stdout.write(sentence + '\n')
