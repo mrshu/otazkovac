@@ -11,6 +11,7 @@ setup(
     url='https://github.com/mrshu/otazkovac',
 
     include_package_data=True,
+    install_requires=['sklearn', 'ufal.morphodita'],
     packages=['otazkovac'],
 
     license="GPL 3.0",
