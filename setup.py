@@ -6,7 +6,7 @@ setup(
     description='Question generator for Slovak language',
     author='Marek Suppa',
     author_email='marek@suppa.sk',
-    version='0.0.1',
+    version='0.0.2',
 
     url='https://github.com/mrshu/otazkovac',
 
