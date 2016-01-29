@@ -1,15 +1,13 @@
 from ufal.morphodita import *
 import re
-import codecs
-import locale
 
 
 class QuestionEngine(object):
-
-    """Docstring for QuestionEngine. """
+    """A class that holds the actual question generation model."""
 
     def __init__(self, model_path, pipeline, mapping=None):
-        """"""
+        """Initalize the class with given model (loaded from model_path) and
+        classification pipeline (from pipeline)."""
 
         self.pipeline = pipeline
 
@@ -31,6 +29,9 @@ class QuestionEngine(object):
             raise Exception("No tokenizer is defined for the supplied model!")
 
     def generate_questions(self, text):
+        """A function that gets text and returns questions from this text in
+        return."""
+
         self.tokenizer.setText(text)
         t = 0
         forms = Forms()

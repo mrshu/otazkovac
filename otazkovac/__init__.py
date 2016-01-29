@@ -3,7 +3,6 @@ from helpers import load_pipeline
 from engine import QuestionEngine
 import codecs
 import locale
-import re
 
 encoding = locale.getpreferredencoding()
 sys.stdin = codecs.getreader(encoding)(sys.stdin)
