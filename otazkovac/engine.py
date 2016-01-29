@@ -22,7 +22,8 @@ class QuestionEngine(object):
         if self.mapping is None:
             self.mapping = {
                 u'T': 'Kedy',
-                u'P': 'Kde'
+                u'P': 'Kde',
+                u'I': None
             }
 
         if self.tokenizer is None:
@@ -80,7 +81,7 @@ class QuestionEngine(object):
 
             if sentence != '' and sentence.endswith('.') and lem != '':
                 predicted = self.pipeline.predict([lem])[0]
-                if predicted == u'I':
+                if self.mapping[predicted] is None:
                     continue
 
                 sentence = re.sub('^\s*\,\s*', '', sentence)
