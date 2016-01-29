@@ -1,6 +1,6 @@
 import sys
-from ufal.morphodita import *
 from helpers import load_pipeline
+from engine import QuestionEngine
 import codecs
 import locale
 import re
@@ -17,26 +17,10 @@ def main():
         sys.stdout.write(USAGE.format(sys.argv[0]) + '\n')
         sys.exit(0)
 
-    tagger = Tagger.load(sys.argv[2])
-    if not tagger:
-        sys.stderr.write("Cannot load tagger from file '%s'\n" % sys.argv[2])
-        sys.exit(1)
-        sys.stderr.write('done\n')
-
+    model_path = sys.argv[2]
     pipeline = load_pipeline(sys.argv[1])
-
-    mapping = {
-        u'T': 'Kedy',
-        u'P': 'Kde'
-    }
-
-    forms = Forms()
-    lemmas = TaggedLemmas()
-    tokens = TokenRanges()
-    tokenizer = tagger.newTokenizer()
-    if tokenizer is None:
-        sys.stderr.write("No tokenizer is defined for the supplied model!")
-        sys.exit(1)
+    engine = QuestionEngine(model_path=model_path,
+                            pipeline=pipeline)
 
     not_eof = True
     while not_eof:
@@ -53,55 +37,5 @@ def main():
             if not line:
                 break
 
-        tokenizer.setText(text)
-        t = 0
-        while tokenizer.nextSentence(forms, tokens):
-            tagger.tag(forms, lemmas)
-
-            sentence = ''
-            lem = ''
-            last_num = ''
-            taking = False
-            capturing = False
-
-            for i in range(len(lemmas)):
-                lemma = lemmas[i]
-                token = tokens[i]
-                selected_text = text[token.start: token.start + token.length]
-
-                if selected_text == ',':
-                    taking = True
-                    capturing = False
-                    sentence = ''
-
-                if len(lemma.tag) > 4 and last_num != lemma.tag[4]:
-                    taking = True
-                    capturing = False
-
-                if lemma.tag[0] == 'E' and lemma.tag[4] == '6' and i == 0:
-                    taking = False
-                    capturing = True
-                    last_num = '6'
-
-                if taking:
-                    sentence += selected_text + ' '
-
-                if capturing:
-                    lem += lemma.lemma + '/' + lemma.tag + ' '
-
-                if len(lemma.tag) > 4:
-                    last_num = lemma.tag[4]
-
-                t = token.start + token.length
-            sentence = sentence.strip()
-
-            if sentence != '' and sentence.endswith('.') and lem != '':
-                predicted = pipeline.predict([lem])[0]
-                if predicted == u'I':
-                    continue
-
-                sentence = re.sub('^\s*\,\s*', '', sentence)
-                sentence = mapping[predicted] + ' ' + sentence
-                sentence = re.sub('\s*\.$', '?', sentence)
-
-                sys.stdout.write(sentence + '\n')
+        for sentence in engine.generate_questions(text):
+            sys.stdout.write(sentence + '\n')
