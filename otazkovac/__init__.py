@@ -14,7 +14,7 @@ USAGE = "usage: {} [model.pkl] [morphodita_tagger.model]"
 
 def main():
     if len(sys.argv) < 2:
-        sys.stdout.write(USAGE.format(sys.argv[0]))
+        sys.stdout.write(USAGE.format(sys.argv[0]) + '\n')
         sys.exit(0)
 
     tagger = Tagger.load(sys.argv[2])
@@ -46,7 +46,8 @@ def main():
             not_eof = bool(line)
             if not not_eof:
                 break
-            line = line.rstrip('\r\n')
+            line = line.rstrip('\n')
+            line = line.rstrip('\r')
             text += line
             text += '\n'
             if not line:
