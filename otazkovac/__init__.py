@@ -36,5 +36,6 @@ def main():
             if not line:
                 break
 
-        for sentence in engine.generate_questions(text):
-            sys.stdout.write(sentence + '\n')
+        for question in engine.generate_questions(text):
+            sys.stdout.write(unicode(question))
+            sys.stdout.write('\n')

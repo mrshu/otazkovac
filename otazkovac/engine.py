@@ -2,6 +2,20 @@ from ufal.morphodita import *
 import re
 
 
+class Question(object):
+
+    def __init__(self, question, answer):
+        self.question = question
+        self.answer = answer
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return u"<Question('{}', answer='{}')>".format(self.question,
+                                                       self.answer)
+
+
 class QuestionEngine(object):
     """A class that holds the actual question generation model."""
 
@@ -34,7 +48,6 @@ class QuestionEngine(object):
         return."""
 
         self.tokenizer.setText(text)
-        t = 0
         forms = Forms()
         lemmas = TaggedLemmas()
         tokens = TokenRanges()
@@ -42,6 +55,7 @@ class QuestionEngine(object):
         while self.tokenizer.nextSentence(forms, tokens):
             self.tagger.tag(forms, lemmas)
 
+            response = ''
             sentence = ''
             lem = ''
             last_num = ''
@@ -56,7 +70,6 @@ class QuestionEngine(object):
                 if selected_text == ',':
                     taking = True
                     capturing = False
-                    sentence = ''
 
                 if len(lemma.tag) > 4 and last_num != lemma.tag[4]:
                     taking = True
@@ -72,11 +85,11 @@ class QuestionEngine(object):
 
                 if capturing:
                     lem += lemma.lemma + '/' + lemma.tag + ' '
+                    response += selected_text + ' '
 
                 if len(lemma.tag) > 4:
                     last_num = lemma.tag[4]
 
-                t = token.start + token.length
             sentence = sentence.strip()
 
             if sentence != '' and sentence.endswith('.') and lem != '':
@@ -88,4 +101,8 @@ class QuestionEngine(object):
                 sentence = self.mapping[predicted] + ' ' + sentence
                 sentence = re.sub('\s*\.$', '?', sentence)
 
-                yield sentence
+                # and to be sure ...
+                sentence = re.sub('\s*\,', ',', sentence)
+                response = response.rstrip()
+
+                yield Question(question=sentence, answer=response)
