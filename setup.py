@@ -6,13 +6,14 @@ setup(
     description='Question generator for Slovak language',
     author='Marek Suppa',
     author_email='marek@suppa.sk',
-    version='0.0.2',
+    version='0.0.3',
 
     url='https://github.com/mrshu/otazkovac',
 
     include_package_data=True,
     setup_requires=['numpy'],
-    install_requires=['numpy', 'scipy', 'sklearn', 'ufal.morphodita'],
+    install_requires=['numpy', 'scipy', 'sklearn', 'ufal.morphodita', 'Click',
+                      'Flask'],
     packages=['otazkovac'],
 
     license="GPL 3.0",

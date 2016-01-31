@@ -15,15 +15,20 @@ class Question(object):
         return u"<Question('{}', answer='{}')>".format(self.question,
                                                        self.answer)
 
+    def to_dict(self):
+        return dict(question=self.question,
+                    answer=self.answer)
+
 
 class QuestionEngine(object):
     """A class that holds the actual question generation model."""
 
-    def __init__(self, model_path, pipeline, mapping=None):
+    def __init__(self, model_path, pipeline, mapping=None, debug=False):
         """Initalize the class with given model (loaded from model_path) and
         classification pipeline (from pipeline)."""
 
         self.pipeline = pipeline
+        self.debug = debug
 
         self.tagger = Tagger.load(model_path)
         if not self.tagger:
@@ -66,6 +71,8 @@ class QuestionEngine(object):
                 lemma = lemmas[i]
                 token = tokens[i]
                 selected_text = text[token.start: token.start + token.length]
+                if self.debug:
+                    print ('%s - %s' % (lemma.tag, selected_text))
 
                 if selected_text == ',':
                     taking = True
@@ -93,6 +100,9 @@ class QuestionEngine(object):
             sentence = sentence.strip()
 
             if sentence != '' and sentence.endswith('.') and lem != '':
+                if self.debug:
+                    print ('lemma: %s\n' % (lem))
+
                 predicted = self.pipeline.predict([lem])[0]
                 if self.mapping[predicted] is None:
                     continue
