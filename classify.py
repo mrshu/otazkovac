@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
-from sklearn.feature_extraction.text import (TfidfVectorizer, CountVectorizer,
-                                             HashingVectorizer)
-
-from sklearn.cross_validation import ShuffleSplit
-from sklearn.svm import LinearSVC, SVC
-from sklearn.linear_model import SGDClassifier
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.multiclass import OneVsOneClassifier
 from sklearn import cross_validation
 import sklearn.metrics
 from sklearn import preprocessing
 from sklearn.externals import joblib
-
-from mlxtend.classifier import EnsembleClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 import sys
 import pandas as pd
@@ -32,76 +26,66 @@ f = sys.argv[1]
 csv = pd.read_csv(f, header=None, encoding='utf-8', sep='\t')
 
 
-vectorizers = [
+def tokenize(input):
+    lemmas = input.split()
+    tokens = [lemma.split('/')[0] for lemma in lemmas]
+    tokens = list(part for token in tokens for part in token)
+    return tokens
 
-    CountVectorizer(ngram_range=(2, 3),
-                    tokenizer=otazkovac.helpers.tokenize),
-    CountVectorizer(ngram_range=(2, 4),
-                    tokenizer=otazkovac.helpers.tokenize),
-    CountVectorizer(analyzer=otazkovac.helpers.special_unigrams_bigrams)
+np.random.seed(42)
+
+vectorizers = [
+    (CountVectorizer(ngram_range=(2, 3),
+                     tokenizer=tokenize), '2-3 normal'),
+    (CountVectorizer(ngram_range=(2, 4),
+                     tokenizer=tokenize), '2-4 normal'),
+    (CountVectorizer(analyzer=otazkovac.helpers.special_unigrams_bigrams),
+     '1-4 specia'),
+    (CountVectorizer(ngram_range=(2, 4),
+                     tokenizer=otazkovac.helpers.tokenize),
+     '2-4 revers'),
+    (CountVectorizer(ngram_range=(2, 3),
+                     tokenizer=otazkovac.helpers.tokenize),
+     '2-3 revers'),
 ]
 
 classifiers = [
     MultinomialNB(),
-    SGDClassifier(loss='squared_hinge', penalty='l2', alpha=1e-4, n_iter=10),
+    RandomForestClassifier(),
     LinearSVC(loss='squared_hinge', penalty='l2', dual=False, tol=1e-4),
 ]
 
 pipelines = []
 
-
-splitter = ShuffleSplit(csv.shape[0], n_iter=10, test_size=0.2)
-for v in vectorizers:
-    print "> Running tests with {}".format(v)
+for (v, name) in vectorizers:
+    # print "> Running tests with {}".format(v)
+    print
+    print name,
     for classifier in classifiers:
-        print "  > Using classifier {}".format(classifier)
-        accuracies = []
-        f1s = []
-
-        for train, test in splitter:
-            pipeline = Pipeline([('vect', v),
-                                 ('tfidf', TfidfTransformer(sublinear_tf=True,
-                                                            use_idf=False)),
-                                 ('clf', OneVsOneClassifier(classifier))])
-
-            pipeline.fit(np.asarray(csv[1][train]),
-                         np.asarray(csv[2][train]))
-
-            y_test = csv[2][test]
-            X_test = csv[1][test]
-
-            accuracies.append(pipeline.score(X_test, y_test))
-
-        accuracies = np.array(accuracies)
-        f1s = np.array(f1s)
-        print '    > Accuracy: {} ({})'.format(accuracies.mean(),
-                                               accuracies.std()*2)
+        # print "  > Using classifier {}".format(classifier)
         pipeline = Pipeline([('vect', v),
-                             ('tfidf', TfidfTransformer(sublinear_tf=True,
-                                                        use_idf=False)),
-                             ('clf', classifier)])
+                            ('clf', OneVsOneClassifier(classifier))])
+
+        accuracies = cross_validation.cross_val_score(pipeline, csv[1], csv[2],
+                                                      cv=10)
+        print '    {:.2f}'.format(accuracies.mean()*100,
+                                            accuracies.std()*200),
+
+        pipeline = Pipeline([('vect', v),
+                             ('clf', OneVsOneClassifier(classifier))])
         pipelines.append(pipeline)
 
-accuracies = []
-for train, test in splitter:
-    pipeline = EnsembleClassifier(clfs=pipelines, voting='hard')
-
-    pipeline.fit(np.asarray(csv[1][train]),
-                 np.asarray(csv[2][train]))
-
-    y_test = csv[2][test]
-    X_test = csv[1][test]
-
-    accuracies.append(pipeline.score(X_test, y_test))
-accuracies = np.array(accuracies)
-print '    > Accuracy: {} ({})'.format(accuracies.mean(),
-                                       accuracies.std()*2)
-
+print
 print "Full dataset:"
 pipelines[-1].fit(np.asarray(csv[1]), np.asarray(csv[2]))
 print "Full dataset accuracy: {}".format(pipelines[-1].score(csv[1], csv[2]))
 
 predicted = pipelines[-1].predict(csv[1])
+
+print "Classification report:"
+print sklearn.metrics.classification_report(csv[2], predicted)
+
+print "Confusion matrix:"
 print sklearn.metrics.confusion_matrix(csv[2], predicted)
 
 print "Incorrect classifications:"
