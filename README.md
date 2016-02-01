@@ -8,7 +8,7 @@ Citanka](https://www.mmcitanka.sk/), a web application thanks to which kids in
 the first three grades of Slovak primary schools learn how to read with some
 help of a computer. `otazovac` shall be used to help teachers automatically
 generate questions from the text their pupils read and thereby test how much
-detail from the test were they able to comprehend.
+detail from the text were they able to comprehend.
 
 ### Question generation
 
@@ -201,11 +201,11 @@ the correct class. Here are a few:
 
 > Na konci mesta si našiel lietajúcu motorku a ukradol ju.
 
-Unfortunately in this case (and in many others) the MorphoDiTa model did not
-decided that the third word ('mesta') used a different case than the two
-before. This is not true but given our premise the model received only the
-first two lemmatized words instead of the first three of them which greatly
-affected the result.
+Unfortunately in this case (and in many others) the MorphoDiTa model decided
+that the third word ('mesta') used a different case than the two before. This
+is not true but given our premise the model received only the first two
+lemmatized words instead of the first three of them which greatly affected the
+result.
 
 > Na Havaj sa teším.
 
@@ -299,4 +299,4 @@ http://korpus.juls.savba.sk/index_en.html
 
 [6] http://korpus.juls.savba.sk/attachments/morpho_en/tagset-www.pdf
 
-[7] Systems that generate questions from English text (such as Heilman, Michael, and Noah A. Smith. Question generation via overgenerating transformations and ranking. No. CMU-LTI-09-013. CARNEGIE-MELLON UNIV PITTSBURGH PA LANGUAGE TECHNOLOGIES INST, 2009.) usually use Tregex and Tsurgeon expressions that take care of many cases of sentence transformation.
+[7] Systems that generate questions from English text (such as *Heilman, Michael, and Noah A. Smith. Question generation via overgenerating transformations and ranking. No. CMU-LTI-09-013. CARNEGIE-MELLON UNIV PITTSBURGH PA LANGUAGE TECHNOLOGIES INST, 2009.*) usually use Tregex and Tsurgeon expressions that take care of many cases of sentence transformation: http://nlp.stanford.edu/software/tregex.shtml.

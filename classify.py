@@ -69,7 +69,7 @@ for (v, name) in vectorizers:
         accuracies = cross_validation.cross_val_score(pipeline, csv[1], csv[2],
                                                       cv=10)
         print '    {:.2f}'.format(accuracies.mean()*100,
-                                            accuracies.std()*200),
+                                  accuracies.std()*200),
 
         pipeline = Pipeline([('vect', v),
                              ('clf', OneVsOneClassifier(classifier))])
