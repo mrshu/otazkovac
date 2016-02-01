@@ -10,6 +10,9 @@ help of a computer. `otazovac` shall be used to help teachers automatically
 generate questions from the text their pupils read and thereby test how much
 detail from the text were they able to comprehend.
 
+This project is licensed under the terms of the GNU General Public License (v2
+or later).
+
 ### Question generation
 
 While generation of questions from text might sound like an interesting problem
